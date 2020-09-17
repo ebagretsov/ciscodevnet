@@ -1,4 +1,3 @@
-//Webex Bot Starter - featuring the webex-node-bot-framework - https://www.npmjs.com/package/webex-node-bot-framework
 var request = require('request');
 
 var framework = require('webex-node-bot-framework');
@@ -8,14 +7,13 @@ var bodyParser = require('body-parser');
 var app = express();
 app.use(bodyParser.json());
 app.use(express.static('images'));
-const config = require("./config.json");
 
 //get DNA auth token
 var token = getAuthToken('devnetuser', 'Cisco123!'); // we should store token here
 
 /*
  some code removed
-/*
+*/
 
 //Process incoming messages
 
