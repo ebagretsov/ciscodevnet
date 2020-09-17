@@ -1,62 +1,54 @@
-var request = require('request');
+const request = require('request')
 
-var framework = require('webex-node-bot-framework');
-var webhook = require('webex-node-bot-framework/webhook');
-var express = require('express');
-var bodyParser = require('body-parser');
-var app = express();
-app.use(bodyParser.json());
-app.use(express.static('images'));
+const framework = require('webex-node-bot-framework')
+const webhook = require('webex-node-bot-framework/webhook')
+const express = require('express')
+const bodyParser = require('body-parser')
+const app = express()
 
-//get DNA auth token
-var token = getAuthToken('devnetuser', 'Cisco123!'); // we should store token here
-
-/*
- some code removed
-*/
-
-//Process incoming messages
-
-// get help
-framework.hears(/help, function (bot, trigger) {
-  console.log(`/help command recieved`);
-  
-  //когда получает запрос извне, нужно выполнить http request использую полученный ранее token
-});
+app.use(bodyParser.json())
+app.use(express.static('images'))
 
 /*
   Get DNA Center Auth Token for X-Auth-Header API requests
 */
+const getAuthToken = async (username, password) => new Promise((resolve, reject) => {
+    console.log('Getting DNA Center Auth Token...')
+    let authString = 'Basic ' + new Buffer(username + ':' + password).toString('base64')
 
-function getAuthToken(username, password) {
-  console.log("Getting DNA Center Auth Token...");
+    let headers = {
+        'Content-Type': 'application/json',
+        'Authorization': authString,
+        'Accept': 'application/json'
+    }
 
-  var authString = "Basic " + new Buffer(username + ":" + password).toString("base64");
+    let body = null
+    let options = {
+        method: 'POST',
+        rejectUnauthorized: false,
+        url: 'https://sandboxdnac.cisco.com/dna/system/api/v1/auth/token',
+        headers,
+        body
+    }
 
-  headers = {
-      "Content-Type": "application/json",
-      "Authorization": authString,
-      "Accept": "application/json"
-  }
+    request(options, (error, response) => {
+        if (error) return reject(error)
+        let responseBody = JSON.parse(response.body)
+        resolve(responseBody.Token)
+    })
+});
 
-  body = null;
+(async function () {
+    // теперь токен можно использовать в скопе анонимной функции
+    let token = await getAuthToken('devnetuser', 'Cisco123!')
+    console.log(token)
 
-  var options = {
-      method: 'POST',
-      rejectUnauthorized: false,
-      url: 'https://sandboxdnac.cisco.com/dna/system/api/v1/auth/token',
-      headers,
-      body,
-  };
+    //Process incoming messages
 
-  request(options, function (error, response) { 
-      if (error) throw new Error(error);
-      getTokenResult = JSON.parse(response.body);
-      console.log(getTokenResult.Token);
-  });
-
-}
-
-/*
- start server here and listen incoming messages
-*/
+    // get help
+    // framework.hears('/help', function (bot, trigger) {
+    //     console.log(`/help command recieved`)
+    //
+    //     //когда получает запрос извне, нужно выполнить http request использую полученный ранее token
+    // })
+})()
